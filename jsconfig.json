@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "baseUrl": "./",
+        "paths": {
+            "@assets/*": ["src/assets/*"],
+            "@components/*": ["src/components/*"],
+            "@configs/*": ["src/configs/*"],
+            "@context/*": ["src/context/*"],
+            "@i18n/*": ["src/i18n/*"],
+            "@pages/*": ["src/pages/*"],
+            "@redux/*": ["src/redux/*"],
+            "@repository/*": ["src/repository/*"],
+            "@routes/*": ["src/routes/*"],
+            "@styles/*": ["src/styles/*"],
+            "@utils/*": ["src/utils/*"]
+        }
+    },
+    "exclude": ["node_modules", "babel.config.js", "metro.config.js"]
+}

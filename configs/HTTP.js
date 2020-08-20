@@ -5,73 +5,69 @@
  *  - Dùng để lấy dữ liệu từ DOMAIN được cấu hình trong CONFIG
  *  - Hiện tại có các phương thức: post, get. Ngoài ra sẽ phát triển thêm các phương thức khác trong tương lai.
  */
-import CONFIG from './Config';
+import { domain as DOMAIN } from './Config';
+import axios from 'axios';
 
 var HTTP = {};
-var DOMAIN = CONFIG['domain'];
+
+const client = axios.create({
+    baseURL: DOMAIN,
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+    },
+    timeout: 8000,
+});
 
 function post(url, options, success, failure) {
-    if (!url.match(/https?:\/\//)) {
-        url = DOMAIN + url;
-    };
-
-    options['method'] = "POST";
-
-    var isContentTypeInHeader = false;
-    if (options['headers']) {
-        Object.keys(options['headers']).forEach(key => {
-            if (key.match(new RegExp("content-type", "i"))) {
-                isContentTypeInHeader = true;
-            };
+    client
+        .post(url, options['body'])
+        .then(
+            res => {
+                if (
+                    res.data['error'] != undefined &&
+                    res.data['error']['message'] != undefined
+                ) {
+                    failure(res.data['error']['message']);
+                } else {
+                    success(res.data);
+                }
+            },
+            err => {
+                console.log('err root', err.message);
+                failure(err.message);
+            },
+        )
+        .catch(err => {
+            failure(err.message);
         });
-    };
-
-    if (!options['headers'] | !isContentTypeInHeader) {
-        options['headers'] = {};
-        options['headers']['Content-Type'] = "application/json";
-    };
-
-    let request = fetch(url, options);
-
-    request.then(res => res.json()).then(success).catch(failure);
-};
+}
 
 function get(url, options, success, failure) {
-    if (!url.match(/https?:\/\//)) {
-        url = DOMAIN + url;
-    };
-
-    options['method'] = "GET";
-
-    var isContentTypeInHeader = false;
-    if (options['headers']) {
-        Object.keys(options['headers']).forEach(key => {
-            if (key.match(new RegExp('Content-Type', 'i'))) {
-                isContentTypeInHeader = true;
-            };
+    client
+        .get(url, {
+            params: options['body'],
+        })
+        .then(res => {
+            console.log('res', res);
+            success(res);
+        })
+        .catch(err => {
+            console.log('error', err, ' - ', err.code, ' - ', err.message);
+            failure(err);
         });
-    };
-
-    if (!options['headers'] | !isContentTypeInHeader) {
-        options['headers'] = {};
-        options['headers']['Content-Type'] = "application/json";
-    };
-
-    let request = fetch(url, options);
-
-    request.then(res => res.json()).then(success).catch(failure);
-};
+}
 
 function call(method, url, options, isjson, success, failure) {
     if (!url.match(/https?:\/\//)) {
         url = DOMAIN + url;
-    };
+    }
 
-    if (method.toLowerCase() == "get") {
+    if (method.toLowerCase() == 'get') {
         get(url, options, success, failure);
     }
 
-    if (method.toLowerCase() == "post") {
+    if (method.toLowerCase() == 'post') {
         post(url, options, success, failure);
     }
 
@@ -79,10 +75,11 @@ function call(method, url, options, isjson, success, failure) {
 
     if (isjson) {
         request = request.then(res => res.json());
-    };
+    }
 
     request.then(success).catch(failure);
-};
+}
+
 
 
 HTTP['post'] = post;
